@@ -4,6 +4,21 @@ import sys
 import os
 from dotenv import load_dotenv, dotenv_values
 
+import handlers
+import pymysql
+
+# database connection
+user = os.getenv("DB_USER")
+passwd = os.getenv("DB_PASSWD")
+host = os.getenv("DB_HOST")
+port = os.getenv("DB_PORT")
+database = os.getenv("DB_NAME")
+connection = pymysql.connect(host=host, port=port, user=user, passwd=passwd, database=database)
+cursor = connection.cursor()
+# some other statements  with the help of cursor
+connection.close()
+
+
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
