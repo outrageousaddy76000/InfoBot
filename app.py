@@ -11,7 +11,7 @@ import pymysql
 user = os.getenv("DB_USER")
 passwd = os.getenv("DB_PASSWD")
 host = os.getenv("DB_HOST")
-port = os.getenv("DB_PORT")
+port = int(os.getenv("DB_PORT"))    
 database = os.getenv("DB_NAME")
 connection = pymysql.connect(host=host, port=port, user=user, passwd=passwd, database=database)
 cursor = connection.cursor()
