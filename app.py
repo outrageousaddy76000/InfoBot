@@ -2,37 +2,32 @@ import asyncio
 import logging
 import sys
 import os
-from dotenv import load_dotenv, dotenv_values
-
-import handlers
 import pymysql
-
-# database connection
-user = os.getenv("DB_USER")
-passwd = os.getenv("DB_PASSWD")
-host = os.getenv("DB_HOST")
-port = int(os.getenv("DB_PORT"))    
-database = os.getenv("DB_NAME")
-connection = pymysql.connect(host=host, port=port, user=user, passwd=passwd, database=database)
-cursor = connection.cursor()
-# some other statements  with the help of cursor
-connection.close()
-
-
+from dotenv import load_dotenv, dotenv_values
 from aiogram import Bot, Dispatcher, Router, types
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.types import Message
 from aiogram.utils.markdown import hbold
-
 load_dotenv()
 
 # Bot token can be obtained via https://t.me/BotFather
-TOKEN = os.getenv("TOKEN")
-
+TOKEN=os.environ['TOKEN']
+host=os.environ['DB_HOST']
+user=os.environ['DB_USER']
+passwd=os.environ['DB_PASSWD']
+db=os.environ['DB_NAME']
+ans="Hey"
+try:
+    # Attempt to establish a connection
+    connection = pymysql.connect(host=host, port=3306, user=user, passwd=passwd, database=db)
+    ans = "XConnected"
+    connection.close()
+    
+except pymysql.Error as e:
+    ans = "XError"
 # All handlers should be attached to the Router (or Dispatcher)
 dp = Dispatcher()
-
 
 @dp.message(CommandStart())
 async def command_start_handler(message: Message) -> None:
@@ -54,13 +49,7 @@ async def echo_handler(message: types.Message) -> None:
 
     By default, message handler will handle all message types (like a text, photo, sticker etc.)
     """
-    try:
-        # Send a copy of the received message
-        await message.send_copy(chat_id=message.chat.id)
-    except TypeError:
-        # But not all the types is supported to be copied so need to handle it
-        await message.answer("Nice try!")
-
+    await message.answer(ans)
 
 async def main() -> None:
     # Initialize Bot instance with a default parse mode which will be passed to all API calls
@@ -69,6 +58,13 @@ async def main() -> None:
     await dp.start_polling(bot)
 
 
+# Define the WSGI application
+def application(environ, start_response):
+    asyncio.run(main())
+    start_response('200 OK', [('Content-Type', 'text/html')])
+    return [b"Hello, World!"]
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, stream=sys.stdout)
-    asyncio.run(main())
+    application(None,None)
